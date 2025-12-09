@@ -10,9 +10,6 @@
 #include "process.h"
 #include "ui.h"
 
-//2e try
-//goofy 
-//Luck
 
 // Options pour getopt_long (La même structure complète)
 static struct option long_options[] = {
@@ -32,7 +29,7 @@ static struct option long_options[] = {
 
 const char *optstring = "hdc:t:P:l:s:u:p:a";
 
-// --- Fonctions Utilitaires (Étape 0) ---
+
 
 void manager_print_help(void) {
     printf("Usage: my_top [OPTIONS]\n");
@@ -54,7 +51,7 @@ void manager_print_help(void) {
     printf("\n");
 }
 
-// Demande interactive (nécessaire pour la section 3)
+// Demande interactive 
 void manager_ask_input(const char *prompt, char *buffer, size_t size) {
     fprintf(stdout, "%s", prompt); 
     if (fgets(buffer, size, stdin)) {
@@ -62,7 +59,7 @@ void manager_ask_input(const char *prompt, char *buffer, size_t size) {
     }
 }
 
-// Vérifie les droits 0600 (nécessaire pour la section 2)
+// Vérifie les droits 0600 
 int check_file_permissions(const char *path) {
     struct stat st;
     if (stat(path, &st) != 0) {
@@ -77,7 +74,7 @@ int check_file_permissions(const char *path) {
     return 1;
 }
 
-// Parse le fichier de configuration (nécessaire pour la section 2)
+// Parse le fichier de configuration
 void parse_config_file(const char *path, ManagerConfig *cfg) {
     FILE *f = fopen(path, "r");
     if (!f) return;
@@ -108,14 +105,13 @@ void manager_run(int argc, char *argv[]) {
     int opt, idx;
     int option_all = 0;
 
-    // 1. Parsing des arguments CLI (Votre boucle complète, inchangée)
+    // 1. Parsing des arguments CLI 
     while ((opt = getopt_long(argc, argv, optstring, long_options, &idx)) != -1) {
         switch (opt) {
             case 'h': config.show_help = 1; break;
             case 'd': config.dry_run = 1; break;
             case 'a': option_all = 1; break;
             case 'c': strncpy(config.cli_config_file, optarg, MAX_PATH_LEN - 1); break;
-            // ... (Autres options -t, -P, -u, -p, -s, -l) ...
             case 't': strncpy(config.cli_host.connection_type, optarg, 9); break;
             case 'P': config.cli_host.port = atoi(optarg); break;
             case 'u': strncpy(config.cli_host.username, optarg, MAX_USER_LEN - 1); break;
@@ -149,7 +145,7 @@ void manager_run(int argc, char *argv[]) {
         return;
     }
 
-    // --- LOGIQUE DE PRÉ-EXÉCUTION (Sections ajoutées ou réintégrées) ---
+    // --- LOGIQUE DE PRÉ-EXÉCUTION ---
 
     // 2. Gestion du fichier de configuration (-c ou .config)
     char *config_path = NULL;

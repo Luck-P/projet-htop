@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pwd.h>
-#include "process.h" // NOUVEAU
+#include "process.h" 
 
 
 // Vérifie si une entrée est un PID
@@ -121,9 +121,7 @@ int read_user(const char *pid_str, ProcessInfo *info) {
 
 // 2. get_mem_total (Renommée)
 unsigned long process_get_mem_total() {
-    // Collez le corps de get_mem_total
     FILE *f = fopen("/proc/meminfo", "r");
-    // ... suite du code ...
     if (!f) return 0;
     char label[64];
     unsigned long mem_total_kb = 0;
@@ -136,9 +134,7 @@ unsigned long process_get_mem_total() {
 
 // 3. get_total_cpu_time (Renommée)
 unsigned long long process_get_total_cpu_time() {
-    // Collez le corps de get_total_cpu_time
     FILE *f = fopen("/proc/stat", "r");
-    // ... suite du code ...
     if (!f) return 0;
     char cpu[5];
     unsigned long long user=0, nice=0, system=0, idle=0, iowait=0, irq=0, softirq=0, steal=0;
@@ -156,7 +152,6 @@ double calculate_cpu_percent(unsigned long current_time,
                              unsigned long prev_time,
                              unsigned long long total_cpu,
                              unsigned long long prev_total) {
-    // ... Collez le corps
     unsigned long delta_proc  = current_time - prev_time;
     unsigned long long delta_total = total_cpu - prev_total;
 
@@ -166,9 +161,8 @@ double calculate_cpu_percent(unsigned long current_time,
         return 0.0;
 }
 
-// 5. compare_cpu (Collez ici la fonction telle quelle)
+// 5. compare_cpu
 int compare_cpu(const void *a, const void *b) {
-    // ... Collez le corps
     const ProcessInfo *info_a = (const ProcessInfo *)a;
     const ProcessInfo *info_b = (const ProcessInfo *)b;
 
@@ -179,9 +173,7 @@ int compare_cpu(const void *a, const void *b) {
 
 // 6. initial_scan (Renommée)
 void process_initial_scan(unsigned long prev_proc_times[]) {
-    // Collez le corps de initial_scan.
     DIR *dir = opendir("/proc");
-    // ... suite du code, utilisez read_stat ...
     if (!dir) { perror("opendir initial_scan"); return; }
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
@@ -202,7 +194,7 @@ void process_sort_by_cpu(ProcessInfo processes[], int count) {
     qsort(processes, count, sizeof(ProcessInfo), compare_cpu);
 }
 
-// 8. list_processes devient process_collect_all (sans boucle while(1), ni affichage)
+// 8. list_processes devient process_collect_all
 int process_collect_all(ProcessInfo processes[], int max_count,
                         unsigned long long prev_total_cpu,
                         unsigned long prev_proc_times[],
@@ -215,7 +207,6 @@ int process_collect_all(ProcessInfo processes[], int max_count,
     int count = 0;
     struct dirent *entry;
 
-    // Collez la logique de la boucle 'while' du list_processes (sans le système("clear") et le tri)
     while ((entry = readdir(dir)) != NULL && count < max_count) {
         if (is_pid(entry->d_name)) {
             ProcessInfo *info = &processes[count];
