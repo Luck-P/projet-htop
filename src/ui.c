@@ -69,3 +69,4 @@ void ui_refresh_process_list(ProcessInfo processes[], int count, int is_initial_
     }
     fflush(stdout);
 }
+
