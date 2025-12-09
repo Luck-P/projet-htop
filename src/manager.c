@@ -11,7 +11,7 @@
 #include "ui.h"
 
 // test luck
-//test remote
+
 
 // Options pour getopt_long (La même structure complète)
 static struct option long_options[] = {
