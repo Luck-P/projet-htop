@@ -1,8 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <termios.h>
+#include <sys/select.h>
 #include "process.h"
 #include "ui.h" 
+
+void command_handling(char*);
+void trim_newline(char*);
 
 // 1. format_size 
 void format_size(unsigned long bytes, char *buf, size_t buf_size) {
@@ -58,3 +64,104 @@ void ui_refresh_process_list(ProcessInfo processes[], int count, int is_initial_
     fflush(stdout);
 }
 
+// ----------- keyboard grabbing -----------------
+static struct termios legacy_termios;
+static int term_initialized = 0 ;
+
+//back-to-canonical-mode function 
+static void fallback_term(void){
+    if(term_initialized){
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &legacy_termios);
+    }
+}
+
+//initializer in order to ensure safe fallback
+void term_init(void){
+    if(!term_initialized){
+        tcgetattr(STDIN_FILENO, &legacy_termios);  //we save the keyboard canonical layout
+        term_initialized = 1;
+        atexit(fallback_term);
+    }
+} 
+
+//keyboard mode toggler : (between CANONICAL (0) & RAW (1) modes)
+void term_toggle(int mode){
+    if(!term_initialized){term_init();} //if not done already, ensure proper fallback option 
+    static int rawlready = 0 ; 
+
+    if(mode && !rawlready){ //ask for raw mode + isn't in raw mode -> proceed
+        struct termios raw = legacy_termios; 
+        raw.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+        rawlready = 1;
+    }else if(!mode && rawlready){ //ask for canonical mode + is in raw mode -> proceed
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &legacy_termios);
+        rawlready = 0;
+    }
+
+}
+
+int keyhit_check(void){
+    struct timeval tv = { 0L, 0L }; //timeout to 0 
+    fd_set fds; //dummy list of tracked files
+    FD_ZERO(&fds); //reset tracked files 
+    FD_SET(STDIN_FILENO, &fds); //set tracked files to the one storing input buffer
+    return select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv); //select() function that tells whether or not buffer is empty 
+}
+
+//key logic 
+int input_handling(char inputed){
+    switch(inputed){
+        case 'q': {
+            exit(0); //thanks to atexit(), automatic fallback to canonical mode 
+            break;
+        }
+        case 'c': {
+            term_toggle(0);
+            char user_command[256];
+            printf(" > ");
+            fgets(user_command,sizeof(user_command),stdin);
+            command_handling(user_command);
+            break;
+        }
+    }
+    return 0;
+}
+
+void command_handling(char *command){
+    //underlying logic for a user's written command
+    /*printf("the given command was : %s",command);
+    sleep(3);*/
+    char *action = strtok(command," \n\t");
+
+    if (strcmp(action,"help")==0 || strcmp(action, "h") == 0){
+        printf("help | h : displays available commands\nkill <pid> : terminate the <pid> process\npause <pid> : freezes the <pid> process\nresume <pid> : unfreezes the <pid> process\nrestart <pid> : reload the <pid> process");
+        
+    }else if(strcmp(action,"quit")==0 || strcmp(action, "q") ==0){
+        exit(0);
+        //slight redundancy in exit methods - enhanced user experience
+    }else{
+        char *pid_c = strtok(NULL," \n\t");
+        char *endptr;
+        long pid = strtol(pid_c,&endptr,10);
+        if (*endptr != '\0') {
+            printf("error %s <pid> : <pid> must be a number\n",action);
+        }else{
+            printf("%s %ld",action, pid);
+            //run the kill function with right attribute (matching table ?)
+        }
+    }
+    printf("\n\t--- press enter to continue ---");
+        getchar();
+        return;
+}
+
+// generic 
+/*void trim_newline(char *str) {
+    size_t len = strlen(str);
+    // Check if the last character is a newline
+    if (len > 0 && str[len - 1] == '\n') {
+        str[len - 1] = '\0'; // Replace the newline with a null terminator
+    }
+}*/
+//deprecated already -> using strtok()

@@ -229,7 +229,7 @@ void manager_run(int argc, char *argv[]) {
     // --- Boucle Principale ---
     
     // Initialisation UI
-    ui_init();
+    //ui_init(); ncurses 
     
     // Initialisation des états (variables statiques et tableaux)
     ProcessInfo local_procs[MAX_PROCESSES];
@@ -246,27 +246,41 @@ void manager_run(int argc, char *argv[]) {
     time_t *last_time = malloc(sizeof(time_t));
     stopwatch_init(last_time);
 
+    //initialisation intercepteur de clavier
+    term_init();
+
     while (1) {
-        int count = 0;
-        if(is_first || refresh_check(last_time,config.collect_local ? 2 : 5)){
-        // Collecte Locale
-            if (config.collect_local) {
-                 unsigned long long curr_total = process_get_total_cpu_time();
-                count = process_collect_all(local_procs, MAX_PROCESSES, prev_total_cpu, prev_times, curr_total);
-                process_sort_by_cpu(local_procs, count);
-                prev_total_cpu = curr_total;
+        //entrée dans la boucle -> passage clavier mode RAW
+        term_toggle(1);
+        //vérification du buffer keyhit_check() - 0 = vide / 1 = non-vide
+        if(!keyhit_check()){
+            if(is_first || refresh_check(last_time,config.collect_local ? 2 : 5)){
+                int count = 0;
+                // Collecte Locale
+                if (config.collect_local) {
+                    unsigned long long curr_total = process_get_total_cpu_time();
+                    count = process_collect_all(local_procs, MAX_PROCESSES, prev_total_cpu, prev_times, curr_total);
+                    process_sort_by_cpu(local_procs, count);
+                    prev_total_cpu = curr_total;
              
-                ui_refresh_process_list(local_procs, count, is_first);
-            }
+                    ui_refresh_process_list(local_procs, count, is_first);
+                }
         
-        // Collecte Distante (Placeholder)
-        // for(int i=0; i<config.host_count; i++) { network_collect(&config.hosts[i]); }
+            // Collecte Distante (Placeholder)
+            // for(int i=0; i<config.host_count; i++) { network_collect(&config.hosts[i]); }
+            }else{
+                //cpu protection : we prevent the loop from running at full throttle 
+                nanosleep(&(struct timespec){0,10000000},NULL);
+            }
+            is_first = 0;
+            //sleep(config.collect_local ? 2 : 5); deprecated : we now use a non-blocking stopwatch in order to still catch inputs
         }else{
-            //cpu protection : we prevent the loop from running at full throttle 
-            nanosleep(&(struct timespec){0,10000000},NULL);
+            char pressed = getchar();
+            input_handling(pressed);
+            /*printf("test : %c",test);
+            //key handling
+            getchar();*/
         }
-        is_first = 0;
-        //sleep(config.collect_local ? 2 : 5); deprecated : we now use a non-blocking stopwatch in order to still catch inputs
     }
 
 }
