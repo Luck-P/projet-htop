@@ -44,7 +44,7 @@ int read_stat(const char *pid_str, ProcessInfo *info) {
     fclose(f);
 
     info->pid = pid;
-    // Nettoyer la commande (elle est souvent entourée de parenthèses)
+    // Nettoyer la commande (souvent entourée de parenthèses)
     size_t len = strlen(comm);
     if (len > 0 && comm[0] == '(' && comm[len - 1] == ')') {
         comm[len - 1] = '\0'; // Supprimer la parenthèse fermante
@@ -71,7 +71,7 @@ int read_statm(const char *pid_str, ProcessInfo *info, unsigned long mem_total) 
     if (!f) return 0;
 
     unsigned long size, resident, shared;
-    // statm contient 6 champs, nous ne lisons que les 3 premiers
+    // statm contient 6 champs, on ne lit que les 3 premiers
     if (fscanf(f, "%lu %lu %lu", &size, &resident, &shared) != 3) {
         fclose(f);
         return 0;
@@ -147,7 +147,7 @@ unsigned long long process_get_total_cpu_time() {
     return user + nice + system + idle + iowait + irq + softirq + steal;
 }
 
-// 4. calculate_cpu_percent (Collez ici la fonction telle quelle)
+// 4. calculate_cpu_percent
 double calculate_cpu_percent(unsigned long current_time,
                              unsigned long prev_time,
                              unsigned long long total_cpu,
@@ -171,7 +171,7 @@ int compare_cpu(const void *a, const void *b) {
     return 0;
 }
 
-// 6. initial_scan (Renommée)
+// 6. initial_scan 
 void process_initial_scan(unsigned long prev_proc_times[]) {
     DIR *dir = opendir("/proc");
     if (!dir) { perror("opendir initial_scan"); return; }
@@ -189,7 +189,7 @@ void process_initial_scan(unsigned long prev_proc_times[]) {
     closedir(dir);
 }
 
-// 7. Nouvelle fonction de tri (utilise compare_cpu)
+// 7. Nouvelle fonction de tri
 void process_sort_by_cpu(ProcessInfo processes[], int count) {
     qsort(processes, count, sizeof(ProcessInfo), compare_cpu);
 }

@@ -52,13 +52,13 @@ void print_process(const ProcessInfo *info, int is_initial_run) {
                info->priority, info->nice,
                virt_buf, res_buf, shr_buf,
                info->state, info->mem_percent,
-               info->cpu_percent, // Affichage de la valeur
+               info->cpu_percent, 
                info->time, info->name);
     }
 }
 
 void ui_refresh_process_list(ProcessInfo processes[], int count, int is_initial_run) {
-    system("clear"); // Sera remplacé par ncurses plus tard
+    system("clear"); 
     print_header();
     for (int i = 0; i < count; i++) {
         print_process(&processes[i], is_initial_run);
