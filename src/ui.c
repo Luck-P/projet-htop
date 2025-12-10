@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/select.h>
+#include <signal.h>
+#include <errno.h>
 #include "process.h"
 #include "ui.h" 
 
@@ -132,8 +134,14 @@ void command_handling(char *command){
     //underlying logic for a user's written command
     /*printf("the given command was : %s",command);
     sleep(3);*/
+    
     char *action = strtok(command," \n\t");
+    if(!action){return;}
 
+    //this is were it breaks
+
+    /*printf("action : %s",action);
+    getchar();*/
     if (strcmp(action,"help")==0 || strcmp(action, "h") == 0){
         printf("help | h : displays available commands\nkill <pid> : terminate the <pid> process\npause <pid> : freezes the <pid> process\nresume <pid> : unfreezes the <pid> process\nrestart <pid> : reload the <pid> process");
         
@@ -141,19 +149,50 @@ void command_handling(char *command){
         exit(0);
         //slight redundancy in exit methods - enhanced user experience
     }else{
+        //action checking
+        /*printf("action checking");
+        getchar();*/
+        int ksignal = 0;
+        if(strcmp(action,"kill")==0){
+            ksignal = SIGTERM;
+        }else if(strcmp(action,"pause")==0){
+            ksignal = SIGSTOP;
+        }else if(strcmp(action,"resume")==0){
+            ksignal = SIGCONT;
+        }else if(strcmp(action,"restart")==0){
+            ksignal = SIGHUP;
+        }else{
+            printf("invalid action (%s)",action);
+            goto out;
+        }
+        
+        /*printf("pid checking");
+        getchar();*/
+
+        //pid checking
         char *pid_c = strtok(NULL," \n\t");
         char *endptr;
-        long pid = strtol(pid_c,&endptr,10);
-        if (*endptr != '\0') {
-            printf("error %s <pid> : <pid> must be a number\n",action);
+        if(!pid_c){
+            printf("error : no pid given");
+            goto out;
         }else{
-            printf("%s %ld",action, pid);
-            //run the kill function with right attribute (matching table ?)
+            long pid = strtol(pid_c,&endptr,10);
+            if (*endptr != '\0' || pid<=0) {
+                printf("error '%s %s' : invalid <pid> format \n",action,pid_c);
+            }else{
+                //matching table for action
+                if(ksignal && kill(pid,ksignal) == 0){
+                    printf("process %ld %sed successfully",pid,action);
+                }else{
+                    printf("%s" ,(errno == ESRCH) ? "error : invalid pid" : "error : permission denied"); //it should be either PID issue or perm issue
+                }
+            }
         }
     }
+    out:
     printf("\n\t--- press enter to continue ---");
-        getchar();
-        return;
+    getchar();
+    return;
 }
 
 // generic 
