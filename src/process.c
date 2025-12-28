@@ -171,6 +171,22 @@ int compare_cpu(const void *a, const void *b) {
     return 0;
 }
 
+
+/**
+ * Fonction de comparaison pour qsort pour trier par MEM% (décroissant).
+ */
+int compare_mem(const void *a, const void *b) {
+    const ProcessInfo *info_a = (const ProcessInfo *)a;
+    const ProcessInfo *info_b = (const ProcessInfo *)b;
+
+    // Comparaison de deux doubles.
+    // Retourne 1 si A < B (donc B vient avant A), -1 si A > B (A vient avant B).
+    if (info_a->mem_percent < info_b->mem_percent) return 1;
+    if (info_a->mem_percent > info_b->mem_percent) return -1;
+    
+    return 0; // Les pourcentages sont égaux
+}
+
 // 6. initial_scan 
 void process_initial_scan(unsigned long prev_proc_times[]) {
     DIR *dir = opendir("/proc");
@@ -190,8 +206,12 @@ void process_initial_scan(unsigned long prev_proc_times[]) {
 }
 
 // 7. Nouvelle fonction de tri
-void process_sort_by_cpu(ProcessInfo processes[], int count) {
-    qsort(processes, count, sizeof(ProcessInfo), compare_cpu);
+void process_sort(ProcessInfo processes[], int count, SortMode mode) { 
+    if (mode == SORT_CPU) { // <--- UTILISATION de l'enum au lieu de 0
+        qsort(processes, count, sizeof(ProcessInfo), compare_cpu);
+    } else if (mode == SORT_MEM) { // <--- UTILISATION de l'enum au lieu de 1
+        qsort(processes, count, sizeof(ProcessInfo), compare_mem);
+    }
 }
 
 // 8. list_processes devient process_collect_all

@@ -7,6 +7,12 @@
 #define MAX_PID 65536
 #define MAX_PROCESSES 1024
 
+// Définition des modes de tri
+typedef enum {
+    SORT_CPU, // 0 par défaut
+    SORT_MEM  // 1
+} SortMode;
+
 // Définition de la structure ProcessInfo
 typedef struct {
     int pid;
@@ -41,7 +47,7 @@ int process_collect_all(ProcessInfo processes[], int max_count,
                         unsigned long long current_total_cpu);
 
 // Fonction de tri
-void process_sort_by_cpu(ProcessInfo processes[], int count);
-int compare_cpu(const void *a, const void *b); // qsort a besoin que cette fonction soit visible
+void process_sort(ProcessInfo processes[], int count, SortMode mode);
+
 
 #endif

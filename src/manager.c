@@ -260,7 +260,9 @@ void manager_run(int argc, char *argv[]) {
     //initialisation intercepteur de clavier
     term_init();
 
-    while (1) {
+    SortMode current_mode = SORT_CPU;
+
+        while (1) {
         //entrée dans la boucle -> passage clavier mode RAW
         term_toggle(1);
         //vérification du buffer keyhit_check() - 0 = vide / 1 = non-vide
@@ -271,7 +273,7 @@ void manager_run(int argc, char *argv[]) {
                 if (config.collect_local) {
                     unsigned long long curr_total = process_get_total_cpu_time();
                     count = process_collect_all(local_procs, MAX_PROCESSES, prev_total_cpu, prev_times, curr_total);
-                    process_sort_by_cpu(local_procs, count);
+                    process_sort(local_procs, count, current_mode);
                     prev_total_cpu = curr_total;
              
                     ui_refresh_process_list(local_procs, count, is_first);
@@ -287,6 +289,16 @@ void manager_run(int argc, char *argv[]) {
             //sleep(config.collect_local ? 2 : 5); deprecated : we now use a non-blocking stopwatch in order to still catch inputs
         }else{
             char pressed = getchar();
+            
+            if (pressed == 'm') {
+                current_mode = SORT_MEM;
+                *last_time = 0;
+            }
+            if (pressed == 'p') {
+                current_mode = SORT_CPU;
+                *last_time = 0;
+            }
+
             input_handling(pressed);
             /*printf("test : %c",test);
             //key handling
