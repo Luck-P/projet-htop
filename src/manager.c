@@ -309,7 +309,7 @@ void manager_run(int argc, char *argv[]) {
         sleep(2);   //si une connexion ssh a échoué, l'utilisateur a le temps de lire l'erreur avant que le programme ne poursuive
     }
 
-        while (1) {
+    
     while (1) {
         //entrée dans la boucle -> passage clavier mode RAW
         term_toggle(1);
