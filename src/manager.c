@@ -270,7 +270,6 @@ void manager_run(int argc, char *argv[]) {
 
     SortMode current_mode = SORT_CPU;
 
-<<<<<<< HEAD
     //initialisation de la session distante 
     ssh_session remote_sessions[MAX_HOSTS] = {0};
     int active_rem_hosts=0;
@@ -311,9 +310,7 @@ void manager_run(int argc, char *argv[]) {
     }
 
         while (1) {
-=======
     while (1) {
->>>>>>> a931d31 (ajustement + commentaire)
         //entrée dans la boucle -> passage clavier mode RAW
         term_toggle(1);
         //vérification du buffer keyhit_check() - 0 = vide / 1 = non-vide
@@ -372,7 +369,6 @@ void manager_run(int argc, char *argv[]) {
         }else{
             char pressed = getchar();
             
-<<<<<<< HEAD
             switch(pressed){
                 case 'm': {
                     current_mode = SORT_MEM;
@@ -412,10 +408,8 @@ void manager_run(int argc, char *argv[]) {
                 }
 
             }
-=======
             if (pressed == 'm') current_mode = SORT_MEM;
             if (pressed == 'p') current_mode = SORT_CPU;
->>>>>>> a931d31 (ajustement + commentaire)
 
             
             /*else{
