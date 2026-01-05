@@ -56,7 +56,7 @@ int network_collect(ssh_session session, ProcessInfo processes[], int max_count)
     // The command: match the columns to your struct
     // pid, user, state, priority, nice, virt(kb), res(kb), mem%, cpu%, time(sec), command
     //const char *cmd = "ps -Ao pid,user,state,pri,ni,vsz,rss,pmem,pcpu,times,comm --no-headers --sort=-pcpu | head -n 50";
-    const char *cmd = "ps -A -o pid,user,state,pri,ni,vsz,rss,pmem,pcpu,times,comm";
+    const char *cmd = "ps -A -o pid,user,state,pri,ni,vsz,rss,pmem,pcpu,times,comm"; //suppression des flags complexes pour une meilleure compatibilité 
     rc = ssh_channel_request_exec(channel, cmd);
     if (rc != SSH_OK) {
         ssh_channel_close(channel);
@@ -86,9 +86,7 @@ int network_collect(ssh_session session, ProcessInfo processes[], int max_count)
 
         ProcessInfo *p = &processes[count];
         
-        // sscanf format matching 'ps' columns
-        // Note: VSZ/RSS from ps are in KB, your struct might expect Bytes. 
-        // We multiply by 1024 to match local units.
+        
         unsigned long vsz_kb = 0, rss_kb = 0;
         
         // ps format: PID USER S PRI NI VSZ RSS %MEM %CPU TIME COMMAND
